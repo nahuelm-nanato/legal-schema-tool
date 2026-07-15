@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legal Schema Generator · SEO + GEO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#00091c;
+    --panel:#0d1430;
+    --panel-2:#363c4b;
+    --yellow:#fed100;
+    --pink:#ee4bc3;
+    --purple:#720b79;
+    --text:#f5f5f5;
+    --text-soft:#9aa0b4;
+    --line:rgba(245,245,245,0.14);
+    --code-bg:#000000;
+    --code-text:#f5f5f5;
+    --code-line:rgba(245,245,245,0.12);
+    --danger:#ff6b81;
+    --font-display:'Baloo 2', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+    --font-body:'Baloo 2', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);}
+  a{color:inherit;}
+
+  .header{
+    padding:32px 48px 0;
+    border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(circle at 92% -10%, rgba(238,75,195,0.16), transparent 55%),
+      var(--bg);
+  }
+  .brand-pill{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; box-sizing:border-box;
+    background:#000; border-radius:100px; padding:14px 32px;
+    margin-bottom:20px;
+  }
+  .brand-pill span{
+    font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:var(--text);
+    letter-spacing:0.01em;
+  }
+  .brand-pill span b{color:var(--yellow); font-weight:800;}
+  .header .eyebrow{
+    font-family:var(--font-mono);
+    font-size:0.72rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--pink);
+    margin:0 0 10px;
+  }
+  .header h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(1.7rem, 3vw, 2.4rem);
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .header p.sub{
+    max-width:640px;
+    color:var(--text-soft);
+    font-size:0.98rem;
+    line-height:1.5;
+    margin:0;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    min-height:calc(100vh - 145px);
+  }
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr;}
+    .output-panel{position:relative; height:auto; top:0;}
+  }
+
+  .form-panel{
+    padding:40px 48px 80px;
+  }
+  .section{margin-bottom:38px;}
+  .section-number{
+    font-family:var(--font-mono);
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    color:var(--pink);
+    margin-bottom:4px;
+  }
+  .section h2{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:1.28rem;
+    margin:0 0 4px;
+    color:var(--text);
+  }
+  .section .hint{
+    font-size:0.85rem;
+    color:var(--text-soft);
+    margin:0 0 18px;
+  }
+
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:0 24px;}
+  .grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 24px;}
+  @media (max-width:520px){ .grid-2, .grid-3{grid-template-columns:1fr;} }
+
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;
+    font-size:0.82rem;
+    color:var(--text-soft);
+    margin-bottom:6px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line);
+    padding:8px 2px;
+    font-family:var(--font-body);
+    font-size:0.98rem;
+    color:var(--text);
+    font-weight:500;
+  }
+  .field textarea{resize:vertical; min-height:56px; font-weight:400;}
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none; border-bottom:1.5px solid var(--yellow);
+  }
+  .field input::placeholder, .field textarea::placeholder{color:rgba(245,245,245,0.32); font-weight:400;}
+
+  .faq-list{margin-bottom:14px;}
+  .faq-row{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:12px;
+    position:relative;
+    background:var(--panel);
+  }
+  .faq-row .field{margin-bottom:10px;}
+  .faq-row .field:last-child{margin-bottom:0;}
+  .faq-remove{
+    position:absolute; top:10px; right:12px;
+    border:none; background:none; cursor:pointer;
+    color:var(--text-soft); font-family:var(--font-mono); font-size:0.78rem;
+    letter-spacing:0.06em;
+  }
+  .faq-remove:hover{color:var(--danger);}
+
+  .add-row{
+    border:1.5px dashed var(--pink);
+    background:none;
+    color:var(--pink);
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:0.85rem;
+    letter-spacing:0.02em;
+    padding:9px 18px;
+    border-radius:100px;
+    cursor:pointer;
+  }
+  .add-row:hover{background:rgba(238,75,195,0.12);}
+
+  .check-grid{display:flex; flex-direction:column; gap:12px;}
+  .check-row{display:flex; align-items:flex-start; gap:10px;}
+  .check-row input{width:auto; margin-top:3px;}
+  .check-row label{font-size:0.92rem; color:var(--text); font-weight:500;}
+  .check-row .desc{display:block; font-size:0.8rem; color:var(--text-soft); font-weight:400; margin-top:2px;}
+
+  .stamp-btn{
+    font-family:var(--font-display);
+    font-size:1.02rem;
+    font-weight:700;
+    background:var(--yellow);
+    color:#000;
+    border:none;
+    padding:14px 32px;
+    border-radius:100px;
+    letter-spacing:0.01em;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .stamp-btn:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(254,209,0,0.3);}
+  .stamp-btn:active{transform:scale(0.98);}
+
+  /* ---- output panel ---- */
+  .output-panel{
+    background:var(--code-bg);
+    color:var(--code-text);
+    padding:40px 44px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+  }
+  .output-top{display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:22px;}
+  .output-title{font-family:var(--font-mono); font-size:0.75rem; letter-spacing:0.14em; color:var(--yellow); text-transform:uppercase;}
+  .output-title span{display:block; font-family:var(--font-display); font-size:1.25rem; letter-spacing:0; text-transform:none; color:var(--code-text); margin-top:6px; font-weight:700;}
+
+  .seal{
+    width:64px; height:64px; flex-shrink:0;
+    opacity:0; transform:scale(1.6) rotate(-14deg);
+    transition:opacity 0.35s ease, transform 0.45s cubic-bezier(.2,1.4,.4,1);
+  }
+  .seal.show{opacity:1; transform:scale(1) rotate(-8deg);}
+
+  .tabs{display:flex; justify-content:space-between; align-items:flex-end; gap:4px; margin-bottom:14px; border-bottom:1px solid var(--code-line);}
+  .tab-group{display:flex;}
+  .lang-toggle{display:flex; gap:4px; margin-bottom:8px;}
+  .lang-toggle-btn{
+    font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.04em;
+    background:none; border:1px solid var(--code-line); color:rgba(245,245,245,0.55);
+    padding:5px 11px; border-radius:100px; cursor:pointer;
+  }
+  .lang-toggle-btn.active{background:var(--yellow); color:#000; border-color:var(--yellow); font-weight:700;}
+
+  .lang-tabs{display:flex; gap:6px; margin-bottom:16px;}
+  .lang-tab{
+    font-family:var(--font-body); font-weight:600; font-size:0.82rem; letter-spacing:0.01em;
+    background:none; border:1px solid var(--line); color:var(--text-soft);
+    padding:7px 18px; border-radius:100px; cursor:pointer;
+  }
+  .lang-tab.active{background:var(--pink); color:#fff; border-color:var(--pink);}
+  .tab-btn{
+    font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.04em;
+    background:none; border:none; color:rgba(245,245,245,0.55);
+    padding:9px 4px; margin-right:18px; cursor:pointer; border-bottom:2px solid transparent;
+  }
+  .tab-btn.active{color:var(--yellow); border-bottom-color:var(--yellow);}
+
+  .copy-btn{
+    font-family:var(--font-mono); font-size:0.76rem; letter-spacing:0.04em;
+    background:rgba(245,245,245,0.08); border:1px solid var(--code-line);
+    color:var(--code-text); padding:7px 14px; border-radius:100px; cursor:pointer;
+    align-self:flex-start; margin-bottom:14px;
+  }
+  .copy-btn:hover{background:rgba(245,245,245,0.16);}
+  .copy-btn.copied{color:var(--yellow); border-color:var(--yellow);}
+
+  pre{
+    font-family:var(--font-mono);
+    font-size:0.82rem;
+    line-height:1.6;
+    white-space:pre-wrap;
+    word-break:break-word;
+    margin:0;
+    flex:1;
+  }
+  .empty-note{font-family:var(--font-body); font-size:0.9rem; color:rgba(245,245,245,0.5); line-height:1.6; margin-top:8px;}
+
+  .wp-tip{
+    margin-top:24px; padding-top:18px; border-top:1px solid var(--code-line);
+    font-size:0.82rem; color:rgba(245,245,245,0.65); line-height:1.55;
+  }
+  .wp-tip b{color:var(--code-text);}
+
+  /* ---- top-level view tabs ---- */
+  .view-tabs{display:flex; gap:6px; margin-top:22px;}
+  .view-tab{
+    font-family:var(--font-body); font-size:0.86rem; font-weight:600; letter-spacing:0.01em;
+    background:none; border:1px solid var(--line); color:var(--text-soft);
+    padding:9px 20px; border-radius:12px 12px 0 0; cursor:pointer;
+    border-bottom:none; position:relative; top:2px;
+  }
+  .view-tab.active{background:var(--panel); border-color:var(--yellow); color:var(--text); font-weight:700;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---- GEO checklist view ---- */
+  .geo-wrap{padding:40px 48px 80px; max-width:920px;}
+  .geo-pillar{
+    border:1px solid var(--line); border-radius:14px; padding:22px 26px; margin-bottom:22px;
+    background:var(--panel);
+  }
+  .geo-pillar-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px;}
+  .geo-pillar-num{font-family:var(--font-mono); font-size:0.78rem; color:var(--pink); letter-spacing:0.08em;}
+  .geo-pillar h3{font-family:var(--font-display); font-size:1.15rem; margin:0; font-weight:700; color:var(--text);}
+  .geo-pillar p.why{font-size:0.88rem; color:var(--text-soft); margin:0 0 14px; line-height:1.5;}
+  .geo-check{display:flex; align-items:flex-start; gap:10px; margin-bottom:9px;}
+  .geo-check input{margin-top:3px; flex-shrink:0;}
+  .geo-check label{font-size:0.92rem; line-height:1.45; color:var(--text);}
+  .geo-check label.done{color:var(--text-soft); text-decoration:line-through;}
+  .geo-progress{
+    display:flex; align-items:center; gap:12px; margin-bottom:26px;
+    font-family:var(--font-mono); font-size:0.82rem; color:var(--text-soft);
+  }
+  .geo-bar{flex:1; height:6px; background:var(--line); border-radius:3px; overflow:hidden;}
+  .geo-bar-fill{height:100%; background:var(--yellow); width:0%; transition:width 0.25s ease;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand-pill">
+    <svg width="104" height="27" viewBox="0 0 152 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M151.943 13.0422C151.943 20.2476 146.101 26.0844 138.901 26.0844C131.7 26.0844 125.858 20.2423 125.858 13.0422C125.858 5.84209 131.7 0 138.901 0C146.101 0 151.943 5.84209 151.943 13.0422Z" fill="#FED100"/>
+      <path d="M37.4274 25.3868H23.1816L30.3072 13.0529L37.4274 0.713623L44.553 13.0529L51.6785 25.3868H37.4274Z" fill="#EE4BC3"/>
+      <path d="M92.4352 25.3868H78.1895L85.315 13.0529L92.4352 0.713623L99.5608 13.0529L106.686 25.3868H92.4352Z" fill="#720B79"/>
+      <path d="M17.1855 0.713623H19.8535V25.7596H18.6287L2.65211 6.14565V25.3868H0V0.713623H1.20357L17.1855 20.3435V0.713623Z" fill="#F5F5F5"/>
+      <path d="M72.2304 0.713623H74.8985V25.7596H73.6736L57.6917 6.14565V25.3868H55.0449V0.713623H56.2485L72.2304 20.3435V0.713623Z" fill="#F5F5F5"/>
+      <path d="M115.351 3.14206V25.3868H112.624V3.14206H104.434V0.713623H123.563V3.14206H115.351Z" fill="#F5F5F5"/>
+      <path d="M62.905 40.0001H61.5363L60.9292 34.4669L58.4262 40.0001H57.67L55.2043 34.4509L54.6025 40.0001H53.1699L54.2244 31.3354H55.0285L58.0428 37.9338L61.057 31.3354H61.8399L62.905 40.0001Z" fill="#F5F5F5"/>
+      <path d="M71.9686 32.5816H67.4312V35.0367H71.0046V36.2349H67.4312V38.7433H71.9846V40.0001H65.9561V31.3354H71.9686V32.5816Z" fill="#F5F5F5"/>
+      <path d="M78.4824 31.3354C79.8511 31.3354 80.9481 31.7295 81.7736 32.5177C82.5991 33.3059 83.0145 34.3497 83.0145 35.6491C83.0145 36.9485 82.5991 38.0083 81.7736 38.8018C80.9481 39.6006 79.8511 39.9947 78.4824 39.9947H74.9463V31.3301H78.4824V31.3354ZM78.4558 38.7432C79.3824 38.7432 80.1174 38.461 80.6765 37.9018C81.2304 37.3426 81.5073 36.597 81.5073 35.6597C81.5073 34.7224 81.2304 33.9822 80.6765 33.4177C80.1227 32.8585 79.3824 32.5763 78.4558 32.5763H76.4268V38.7326H78.4558V38.7432Z" fill="#F5F5F5"/>
+      <path d="M87.4342 31.3354H85.959V40.0001H87.4342V31.3354Z" fill="#F5F5F5"/>
+      <path d="M94.7726 31.3354H93.9738L89.9424 39.8829L90.0116 40.0001H91.4389L92.1631 38.3864L92.717 37.119L94.3572 33.4337L95.8963 36.9485V36.9539L95.9709 37.119H95.9656L96.4448 38.2427H96.4502L97.2277 40.0001H98.7029L98.7668 39.8829L94.7726 31.3354Z" fill="#F5F5F5"/>
+    </svg>
+    <span><b>Internal Tools · Legal SEO</b></span>
+  </div>
+  <h1>Legal Schema Generator + GEO</h1>
+  <p class="sub">Fill in your firm's details once and generate the JSON-LD and llms.txt, ready to paste into WordPress. Built so Google, ChatGPT, Gemini, and Claude can confidently cite your content.</p>
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="schema">Schema Generator</button>
+    <button class="view-tab" data-view="geo">GEO Checklist</button>
+  </div>
+</div>
+
+
+<div class="view active" id="view-schema">
+<div class="layout">
+
+  <div class="form-panel">
+
+    <div class="section">
+      <p class="section-number">01</p>
+      <h2>Firm Details</h2>
+      <p class="hint">Used for the LegalService schema (organization).</p>
+
+      <div class="field">
+        <label for="firmName">Firm name</label>
+        <input id="firmName" placeholder="Ex: Mitchell &amp; Associates Law Group">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="siteUrl">Website URL</label>
+          <input id="siteUrl" placeholder="https://www.mitchelllaw.com">
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" placeholder="+1 (212) 555-0148">
+        </div>
+      </div>
+      <div class="field">
+        <label for="logoUrl">Logo URL</label>
+        <input id="logoUrl" placeholder="https://www.mitchelllaw.com/logo.png">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="street">Street address</label>
+          <input id="street" placeholder="350 Fifth Avenue, Suite 4200">
+        </div>
+        <div class="field">
+          <label for="locality">City</label>
+          <input id="locality" placeholder="New York">
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label for="region">State</label>
+          <input id="region" placeholder="NY">
+        </div>
+        <div class="field">
+          <label for="postal">ZIP code</label>
+          <input id="postal" placeholder="10118">
+        </div>
+        <div class="field">
+          <label for="country">Country (2-letter ISO)</label>
+          <input id="country" placeholder="US">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-number">02</p>
+      <h2>Lead Attorney</h2>
+      <p class="hint">Verifiable credentials — key for YMYL trust.</p>
+
+      <div class="field">
+        <label for="attName">Full name</label>
+        <input id="attName" placeholder="Sarah Mitchell, Esq.">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="attTitleEn">Specialty / title (EN)</label>
+          <input id="attTitleEn" placeholder="Personal Injury Attorney">
+        </div>
+        <div class="field">
+          <label for="attTitleEs">Specialty / title (ES)</label>
+          <input id="attTitleEs" placeholder="Abogada de Lesiones Personales">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="university">Law school</label>
+          <input id="university" placeholder="Fordham University School of Law">
+        </div>
+        <div class="field">
+          <label for="credential">Bar admission / credential</label>
+          <input id="credential" placeholder="New York State Bar, Bar No. 4567890">
+        </div>
+      </div>
+      <div class="field">
+        <label for="recognizedBy">Recognized by (bar association)</label>
+        <input id="recognizedBy" placeholder="New York State Bar Association">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="knowsAboutEn">Practice areas — EN (comma-separated)</label>
+          <input id="knowsAboutEn" placeholder="Personal Injury, Car Accidents, Wrongful Death">
+        </div>
+        <div class="field">
+          <label for="knowsAboutEs">Practice areas — ES (comma-separated)</label>
+          <input id="knowsAboutEs" placeholder="Lesiones Personales, Accidentes de Auto, Muerte Injusta">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-number">03</p>
+      <h2>Reputation</h2>
+      <p class="hint">Optional — omitted if left blank.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="ratingValue">Average rating</label>
+          <input id="ratingValue" placeholder="4.8">
+        </div>
+        <div class="field">
+          <label for="reviewCount">Number of reviews</label>
+          <input id="reviewCount" placeholder="127">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-number">04</p>
+      <h2>Specific Page</h2>
+      <p class="hint">Used for the breadcrumb and the FAQ @id — one URL per language version.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="pageNameEn">Page name (EN)</label>
+          <input id="pageNameEn" placeholder="Car Accident Claims">
+        </div>
+        <div class="field">
+          <label for="pageUrlEn">Page URL (EN)</label>
+          <input id="pageUrlEn" placeholder="https://www.mitchelllaw.com/en/car-accident-claims">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="pageNameEs">Page name (ES)</label>
+          <input id="pageNameEs" placeholder="Reclamos por Accidentes de Auto">
+        </div>
+        <div class="field">
+          <label for="pageUrlEs">Page URL (ES)</label>
+          <input id="pageUrlEs" placeholder="https://www.mitchelllaw.com/es/reclamos-accidentes-auto">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-number">05</p>
+      <h2>Frequently Asked Questions</h2>
+      <p class="hint">Self-contained answers: include the specific fact or statute. Each language has its own set — write natural questions, not literal translations.</p>
+      <div class="lang-tabs">
+        <button class="lang-tab active" data-faq-lang="en">English</button>
+        <button class="lang-tab" data-faq-lang="es">Español</button>
+      </div>
+      <div class="faq-list" id="faqList"></div>
+      <button class="add-row" id="addFaq">+ Add question</button>
+    </div>
+
+    <div class="section">
+      <p class="section-number">06</p>
+      <h2>Schema Types to Include</h2>
+      <div class="check-grid">
+        <div class="check-row">
+          <input type="checkbox" id="incAttorney" checked>
+          <label for="incAttorney">Attorney
+            <span class="desc">Lead attorney profile (section 02)</span>
+          </label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="incFaq" checked>
+          <label for="incFaq">FAQPage
+            <span class="desc">Uses the questions from section 05</span>
+          </label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="incBreadcrumb" checked>
+          <label for="incBreadcrumb">BreadcrumbList
+            <span class="desc">Home → Page name (section 04)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <button class="stamp-btn" id="generateBtn">Stamp document →</button>
+
+  </div>
+
+  <div class="output-panel">
+    <div class="output-top">
+      <div class="output-title">Output
+        <span id="outputHeadline">Waiting for data…</span>
+      </div>
+      <svg class="seal" id="seal" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#fed100" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#fed100" stroke-width="1"/>
+        <text x="50" y="46" text-anchor="middle" fill="#fed100" font-family="IBM Plex Mono" font-size="9" letter-spacing="1">SCHEMA</text>
+        <text x="50" y="60" text-anchor="middle" fill="#fed100" font-family="IBM Plex Mono" font-size="9" letter-spacing="1">VALID</text>
+      </svg>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-group">
+        <button class="tab-btn active" data-tab="jsonld">JSON-LD</button>
+        <button class="tab-btn" data-tab="llms">llms.txt</button>
+      </div>
+      <div class="lang-toggle">
+        <button class="lang-toggle-btn active" data-outlang="en">EN</button>
+        <button class="lang-toggle-btn" data-outlang="es">ES</button>
+      </div>
+    </div>
+
+    <button class="copy-btn" id="copyBtn">Copy code</button>
+    <pre id="output"><span class="empty-note">Fill in the form and click "Stamp document" to generate the code.</span></pre>
+
+    <div class="wp-tip">
+      <b>How to add this to WordPress:</b> paste the JSON-LD block (including the &lt;script&gt; tags) using a plugin like <b>WPCode</b> or <b>Insert Headers and Footers</b>, in the "Header" section to apply it site-wide, or as page-specific code on that entry. The llms.txt file gets uploaded as a static file at the site root (via FTP or a file manager plugin).
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="view" id="view-geo">
+  <div class="geo-wrap">
+
+    <div class="geo-progress">
+      <span id="geoProgressLabel">0 / 0 completed</span>
+      <div class="geo-bar"><div class="geo-bar-fill" id="geoBarFill"></div></div>
+    </div>
+
+    <div class="geo-pillar" data-pillar="1">
+      <div class="geo-pillar-head"><span class="geo-pillar-num">01</span><h3>Content structure — answer first</h3></div>
+      <p class="why">Generative engines cite isolated sentences, not entire pages. The fact needs to be right at the top, not buried at the end.</p>
+      <div class="geo-check"><input type="checkbox"><label>Headings phrased as real questions, not generic titles</label></div>
+      <div class="geo-check"><input type="checkbox"><label>The direct answer (fact, deadline, figure) comes in the first sentence after the heading</label></div>
+      <div class="geo-check"><input type="checkbox"><label>Brand context and calls to action come after the fact, never before</label></div>
+    </div>
+
+    <div class="geo-pillar" data-pillar="2">
+      <div class="geo-pillar-head"><span class="geo-pillar-num">02</span><h3>Authority signals (E-E-A-T)</h3></div>
+      <p class="why">Critical for legal content since it's YMYL: generative engines are more cautious citing legal, financial, or health topics.</p>
+      <div class="geo-check"><input type="checkbox"><label>Visible authorship on every article: attorney name, bar number, bar association</label></div>
+      <div class="geo-check"><input type="checkbox"><label>Every legal claim cites the specific statute that backs it up (law, section, case law)</label></div>
+      <div class="geo-check"><input type="checkbox"><label>The schema (Attorney, hasCredential) matches the visible page text exactly</label></div>
+    </div>
+
+    <div class="geo-pillar" data-pillar="3">
+      <div class="geo-pillar-head"><span class="geo-pillar-num">03</span><h3>Technical infrastructure</h3></div>
+      <p class="why">AI crawlers need to be able to read the content without friction — many don't execute JavaScript.</p>
+      <div class="geo-check"><input type="checkbox"><label>Server-rendered HTML (not solely client-side JavaScript)</label></div>
+      <div class="geo-check"><input type="checkbox"><label>JSON-LD schema validated with no errors (Google's Rich Results Test)</label></div>
+      <div class="geo-check"><input type="checkbox"><label>An llms.txt file published at the site root</label></div>
+    </div>
+
+    <div class="geo-pillar" data-pillar="4">
+      <div class="geo-pillar-head"><span class="geo-pillar-num">04</span><h3>External presence & consistency</h3></div>
+      <p class="why">Trust is also built outside your own site.</p>
+      <div class="geo-check"><input type="checkbox"><label>Consistent NAP (name, address, phone) across Google Business Profile, directories, and social</label></div>
+      <div class="geo-check"><input type="checkbox"><label>Active, verified profile on at least one leading legal directory</label></div>
+      <div class="geo-check"><input type="checkbox"><label>Real, recent reviews, reflected in the schema's AggregateRating</label></div>
+    </div>
+
+    <div class="geo-pillar" data-pillar="5">
+      <div class="geo-pillar-head"><span class="geo-pillar-num">05</span><h3>Multi-engine monitoring</h3></div>
+      <p class="why">Unlike Search Console, there's no single dashboard here — each engine gets checked separately.</p>
+      <div class="geo-check"><input type="checkbox"><label>Manually test common client questions monthly in Google AI Overviews, ChatGPT, Gemini, and Perplexity</label></div>
+      <div class="geo-check"><input type="checkbox"><label>Check Google Analytics for referral traffic from chatgpt.com, perplexity.ai, gemini.google.com</label></div>
+      <div class="geo-check"><input type="checkbox"><label>Repeat the audit every month — content cited by these engines shifts faster than traditional rankings</label></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let faqsByLang = {
+    en: [
+      {q:'How long do I have to file a car accident claim in California?', a:'In California, you generally have 2 years from the date of the accident to file a personal injury claim, under California Code of Civil Procedure Section 335.1. Missing this deadline usually means losing the right to sue for damages.'},
+      {q:'What compensation can I recover after a car accident?', a:'Accident victims can typically recover damages for medical expenses, lost wages, property damage, and pain and suffering. If a drunk or reckless driver caused the crash, California law may also allow punitive damages.'}
+    ],
+    es: [
+      {q:'¿Cuánto tiempo tengo para presentar un reclamo por accidente de auto en California?', a:'En California, generalmente tenés 2 años desde la fecha del accidente para presentar un reclamo por lesiones personales, según la Sección 335.1 del Código de Procedimiento Civil de California. Si no se cumple este plazo, normalmente se pierde el derecho a demandar por daños.'},
+      {q:'¿Qué compensación puedo recibir después de un accidente de auto?', a:'Las víctimas de accidentes generalmente pueden recibir compensación por gastos médicos, salarios perdidos, daños materiales y sufrimiento. Si el accidente fue causado por un conductor ebrio o imprudente, la ley de California también puede permitir daños punitivos.'}
+    ]
+  };
+  let activeFaqLang = 'en';
+  let activeTab = 'jsonld';
+  let activeOutLang = 'en';
+  let lastJson = {en:'', es:''};
+  let lastLlms = {en:'', es:''};
+
+  function renderFaqs(){
+    const list = document.getElementById('faqList');
+    list.innerHTML = faqsByLang[activeFaqLang].map((f, i) => `
+      <div class="faq-row" data-index="${i}">
+        <button class="faq-remove" data-remove="${i}">Remove ×</button>
+        <div class="field">
+          <label>Question</label>
+          <input data-field="q" data-index="${i}" value="${escapeAttr(f.q)}" placeholder="Ex: How long do I have to...?">
+        </div>
+        <div class="field">
+          <label>Answer</label>
+          <textarea data-field="a" data-index="${i}" placeholder="Direct answer, with the specific law or fact...">${f.a}</textarea>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function escapeAttr(s){
+    return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  }
+
+  document.getElementById('faqList').addEventListener('input', (e) => {
+    const idx = e.target.getAttribute('data-index');
+    const field = e.target.getAttribute('data-field');
+    if(idx === null) return;
+    faqsByLang[activeFaqLang][idx][field] = e.target.value;
+  });
+
+  document.getElementById('faqList').addEventListener('click', (e) => {
+    const idx = e.target.getAttribute('data-remove');
+    if(idx === null) return;
+    faqsByLang[activeFaqLang].splice(idx, 1);
+    renderFaqs();
+  });
+
+  document.getElementById('addFaq').addEventListener('click', () => {
+    faqsByLang[activeFaqLang].push({q:'', a:''});
+    renderFaqs();
+  });
+
+  document.querySelectorAll('.lang-tab[data-faq-lang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lang-tab[data-faq-lang]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFaqLang = btn.getAttribute('data-faq-lang');
+      renderFaqs();
+    });
+  });
+
+  renderFaqs();
+
+  function val(id){ return document.getElementById(id).value.trim(); }
+  function checked(id){ return document.getElementById(id).checked; }
+
+  function prune(obj){
+    if(Array.isArray(obj)){
+      return obj.map(prune).filter(v => v !== undefined && v !== null && v !== '');
+    }
+    if(obj && typeof obj === 'object'){
+      const out = {};
+      Object.keys(obj).forEach(k => {
+        const v = prune(obj[k]);
+        const isEmptyObj = v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0;
+        const isEmptyArr = Array.isArray(v) && v.length === 0;
+        if(v !== undefined && v !== null && v !== '' && !isEmptyObj && !isEmptyArr){
+          out[k] = v;
+        }
+      });
+      return out;
+    }
+    return obj;
+  }
+
+  function buildGraph(lang){
+    const cap = lang === 'es' ? 'Es' : 'En';
+    const siteUrl = val('siteUrl');
+    const firmName = val('firmName');
+    const pageUrl = val('pageUrl' + cap);
+    const pageName = val('pageName' + cap);
+    const graph = [];
+
+    const orgId = (siteUrl || 'https://your-site.com') + '/#organization';
+
+    const legalService = {
+      '@type': 'LegalService',
+      '@id': orgId,
+      name: firmName,
+      url: siteUrl,
+      logo: val('logoUrl'),
+      telephone: val('phone'),
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: val('street'),
+        addressLocality: val('locality'),
+        addressRegion: val('region'),
+        postalCode: val('postal'),
+        addressCountry: val('country')
+      }
+    };
+
+    const ratingValue = val('ratingValue');
+    const reviewCount = val('reviewCount');
+    if(ratingValue && reviewCount){
+      legalService.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: ratingValue,
+        reviewCount: reviewCount
+      };
+    }
+
+    graph.push(legalService);
+
+    if(checked('incAttorney')){
+      const knowsAbout = val('knowsAbout' + cap).split(',').map(s => s.trim()).filter(Boolean);
+      graph.push({
+        '@type': 'Attorney',
+        '@id': orgId + '-attorney',
+        name: val('attName'),
+        jobTitle: val('attTitle' + cap),
+        worksFor: { '@id': orgId },
+        alumniOf: val('university') ? { '@type': 'CollegeOrUniversity', name: val('university') } : undefined,
+        hasCredential: (val('credential') || val('recognizedBy')) ? {
+          '@type': 'EducationalOccupationalCredential',
+          credentialCategory: val('credential'),
+          recognizedBy: val('recognizedBy') ? { '@type': 'Organization', name: val('recognizedBy') } : undefined
+        } : undefined,
+        knowsAbout: knowsAbout
+      });
+      legalService.employee = { '@id': orgId + '-attorney' };
+    }
+
+    if(checked('incFaq')){
+      const items = faqsByLang[lang].filter(f => f.q && f.a).map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a }
+      }));
+      if(items.length){
+        graph.push({
+          '@type': 'FAQPage',
+          '@id': (pageUrl || siteUrl || 'https://your-site.com') + '/#faq',
+          inLanguage: lang,
+          mainEntity: items
+        });
+      }
+    }
+
+    if(checked('incBreadcrumb') && pageName){
+      graph.push({
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: (lang === 'es' ? 'Inicio' : 'Home'), item: siteUrl },
+          { '@type': 'ListItem', position: 2, name: pageName, item: pageUrl }
+        ]
+      });
+    }
+
+    return prune(graph);
+  }
+
+  const LLMS_TEXT = {
+    en: {
+      firmFallback: '[Firm name]',
+      practiceIn: 'Legal practice',
+      inWord: ' in ',
+      specializing: ', specializing in ',
+      ledBy: ' Led by ',
+      keyPages: '## Key Pages',
+      pageFallback: '- [Page name](https://your-site.com/page): Brief description of the content.',
+      specializedAbout: 'Specialized content about ',
+      notesHeader: '## Notes for AI Systems',
+      note1: '- All legal content cites the specific statute alongside each claim.',
+      note2: '- This firm does not provide generic legal advice: each case requires individual consultation.'
+    },
+    es: {
+      firmFallback: '[Nombre del despacho]',
+      practiceIn: 'Despacho legal',
+      inWord: ' en ',
+      specializing: ', especializado en ',
+      ledBy: ' Dirigido por ',
+      keyPages: '## Páginas clave',
+      pageFallback: '- [Nombre de página](https://tu-sitio.com/pagina): Descripción breve del contenido.',
+      specializedAbout: 'Contenido especializado sobre ',
+      notesHeader: '## Notas para sistemas de IA',
+      note1: '- Todo el contenido legal cita la normativa específica junto a cada afirmación.',
+      note2: '- Este despacho no representa asesoramiento legal genérico: cada caso requiere consulta particular.'
+    }
+  };
+
+  function buildLlmsTxt(lang){
+    const cap = lang === 'es' ? 'Es' : 'En';
+    const T = LLMS_TEXT[lang];
+    const firmName = val('firmName') || T.firmFallback;
+    const attName = val('attName');
+    const attTitle = val('attTitle' + cap);
+    const credential = val('credential');
+    const university = val('university');
+    const locality = val('locality');
+    const areas = val('knowsAbout' + cap);
+    const pageName = val('pageName' + cap);
+    const pageUrl = val('pageUrl' + cap);
+
+    let lines = [];
+    lines.push(`# ${firmName}`);
+    lines.push('');
+    let desc = `> ${T.practiceIn}${locality ? T.inWord + locality : ''}`;
+    if(areas) desc += `${T.specializing}${areas}`;
+    desc += '.';
+    if(attName) desc += `${T.ledBy}${attName}${attTitle ? ', ' + attTitle : ''}`;
+    if(credential) desc += ` (${credential})`;
+    if(university) desc += `, ${university}`;
+    desc += '.';
+    lines.push(desc);
+    lines.push('');
+    lines.push(T.keyPages);
+    lines.push('');
+    if(pageName && pageUrl){
+      const firstFaq = faqsByLang[lang].find(f => f.q && f.a);
+      lines.push(`- [${pageName}](${pageUrl}): ${firstFaq ? firstFaq.a : T.specializedAbout + pageName + '.'}`);
+    } else {
+      lines.push(T.pageFallback);
+    }
+    lines.push('');
+    lines.push(T.notesHeader);
+    lines.push('');
+    lines.push(T.note1);
+    lines.push(T.note2);
+    return lines.join('\n');
+  }
+
+  function renderOutput(){
+    const outputEl = document.getElementById('output');
+    const store = activeTab === 'jsonld' ? lastJson : lastLlms;
+    outputEl.textContent = store[activeOutLang];
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.getAttribute('data-tab');
+      renderOutput();
+    });
+  });
+
+  document.querySelectorAll('.lang-toggle-btn[data-outlang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lang-toggle-btn[data-outlang]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeOutLang = btn.getAttribute('data-outlang');
+      renderOutput();
+    });
+  });
+
+  document.getElementById('generateBtn').addEventListener('click', () => {
+    ['en', 'es'].forEach(lang => {
+      const graph = buildGraph(lang);
+      const wrapped = { '@context': 'https://schema.org', '@graph': graph };
+      lastJson[lang] = '<script type="application/ld+json">\n' + JSON.stringify(wrapped, null, 2) + '\n<\/script>';
+      lastLlms[lang] = buildLlmsTxt(lang);
+    });
+
+    renderOutput();
+
+    document.getElementById('outputHeadline').textContent = val('firmName') || 'Document generated';
+
+    const seal = document.getElementById('seal');
+    seal.classList.remove('show');
+    void seal.offsetWidth;
+    seal.classList.add('show');
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const store = activeTab === 'jsonld' ? lastJson : lastLlms;
+    const text = store[activeOutLang];
+    if(!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy code'; btn.classList.remove('copied'); }, 1800);
+    });
+  });
+
+  // ---- top-level view tabs ----
+  document.querySelectorAll('.view-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-' + btn.getAttribute('data-view')).classList.add('active');
+    });
+  });
+
+  // ---- GEO checklist progress ----
+  const geoChecks = document.querySelectorAll('.geo-check input');
+  function updateGeoProgress(){
+    const total = geoChecks.length;
+    const done = Array.from(geoChecks).filter(c => c.checked).length;
+    document.getElementById('geoProgressLabel').textContent = `${done} / ${total} completed`;
+    document.getElementById('geoBarFill').style.width = (total ? (done/total*100) : 0) + '%';
+  }
+  geoChecks.forEach(c => {
+    c.addEventListener('change', () => {
+      c.nextElementSibling.classList.toggle('done', c.checked);
+      updateGeoProgress();
+    });
+  });
+  updateGeoProgress();
+</script>
+
+</body>
+</html>
