@@ -292,6 +292,39 @@
   }
   .geo-bar{flex:1; height:6px; background:var(--line); border-radius:3px; overflow:hidden;}
   .geo-bar-fill{height:100%; background:var(--yellow); width:0%; transition:width 0.25s ease;}
+
+  /* ---- page type selector ---- */
+  .pagetype-bar{margin-bottom:32px; padding-bottom:28px; border-bottom:1px solid var(--line);}
+  .pagetype-label{
+    font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--pink); margin:0 0 10px;
+  }
+  .pagetype-select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background:var(--panel) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path d="M1 1L6 6L11 1" stroke="%239aa0b4" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat right 20px center;
+    border:1px solid var(--line);
+    color:var(--text);
+    font-family:var(--font-body); font-weight:600; font-size:0.95rem;
+    padding:13px 46px 13px 22px;
+    border-radius:100px;
+    cursor:pointer;
+    min-width:240px;
+  }
+  .pagetype-select:focus{outline:none; border-color:var(--yellow);}
+  .pagetype-select option{background:var(--panel); color:var(--text);}
+  .section.hidden{display:none;}
+
+  .autosave-note{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:0.78rem; color:var(--text-soft); margin:-8px 0 18px;
+  }
+  .autosave-note b{color:var(--pink); font-weight:600;}
+  .clear-saved-btn{
+    background:none; border:none; color:var(--text-soft); text-decoration:underline;
+    font-family:var(--font-body); font-size:0.78rem; cursor:pointer; padding:0;
+    flex-shrink:0;
+  }
+  .clear-saved-btn:hover{color:var(--danger);}
 </style>
 </head>
 <body>
@@ -327,10 +360,23 @@
 
   <div class="form-panel">
 
-    <div class="section">
+    <div class="pagetype-bar">
+      <p class="pagetype-label">Page type</p>
+      <select class="pagetype-select" id="pageTypeSelect">
+        <option value="home">Home</option>
+        <option value="practice">Practice Area</option>
+        <option value="bio">Attorney Bio</option>
+        <option value="blog">Blog Post</option>
+        <option value="faq">FAQ Page</option>
+        <option value="contact">Contact / Location</option>
+      </select>
+    </div>
+
+    <div class="section" data-show="home,practice,bio,blog,faq,contact">
       <p class="section-number">01</p>
       <h2>Firm Details</h2>
-      <p class="hint">Used for the LegalService schema (organization).</p>
+      <p class="hint">Used for the LegalService schema (organization). Shown on every page type — it's how each page references the firm.</p>
+      <p class="autosave-note"><span><b>Saved automatically</b> on this device — sections 01–03 persist across pages and reloads.</span><button class="clear-saved-btn" id="clearSavedBtn" type="button">Clear saved firm data</button></p>
 
       <div class="field">
         <label for="firmName">Firm name</label>
@@ -390,10 +436,10 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" data-show="home,practice,bio,blog">
       <p class="section-number">02</p>
-      <h2>Lead Attorney</h2>
-      <p class="hint">Verifiable credentials — key for YMYL trust.</p>
+      <h2 id="attorneySectionTitle">Lead Attorney</h2>
+      <p class="hint" id="attorneySectionHint">Verifiable credentials — key for YMYL trust. Leave the name blank to omit this schema entirely.</p>
 
       <div class="field">
         <label for="attName">Full name</label>
@@ -415,8 +461,8 @@
           <input id="university" placeholder="Fordham University School of Law">
         </div>
         <div class="field">
-          <label for="credential">Bar admission / credential</label>
-          <input id="credential" placeholder="New York State Bar, Bar No. 4567890">
+          <label for="barNumber">Bar number</label>
+          <input id="barNumber" placeholder="4567890">
         </div>
       </div>
       <div class="field">
@@ -435,7 +481,7 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" data-show="home">
       <p class="section-number">03</p>
       <h2>Reputation</h2>
       <p class="hint">Optional — omitted if left blank.</p>
@@ -451,7 +497,37 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" data-show="practice">
+      <p class="section-number">03</p>
+      <h2>Practice Area Details</h2>
+      <p class="hint">Feeds the Service schema — what makes this page different from a generic page.</p>
+      <div class="field">
+        <label for="serviceDescEn">Service description (EN)</label>
+        <textarea id="serviceDescEn" placeholder="Legal representation for employees terminated in violation of Illinois or federal employment law."></textarea>
+      </div>
+      <div class="field">
+        <label for="serviceDescEs">Service description (ES)</label>
+        <textarea id="serviceDescEs" placeholder="Representación legal para empleados despedidos en violación de la ley laboral de Illinois o federal."></textarea>
+      </div>
+    </div>
+
+    <div class="section" data-show="blog">
+      <p class="section-number">03</p>
+      <h2>Article Details</h2>
+      <p class="hint">Feeds the Article schema — the headline reuses the page name from section 04.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="datePublished">Date published</label>
+          <input id="datePublished" type="date">
+        </div>
+        <div class="field">
+          <label for="articleImage">Image URL (optional)</label>
+          <input id="articleImage" placeholder="https://www.mitchelllaw.com/blog/cover.jpg">
+        </div>
+      </div>
+    </div>
+
+    <div class="section" data-show="home,practice,bio,blog,faq,contact">
       <p class="section-number">04</p>
       <h2>Specific Page</h2>
       <p class="hint">Used for the breadcrumb and the FAQ @id — one URL per language version.</p>
@@ -475,9 +551,19 @@
           <input id="pageUrlEs" placeholder="https://www.mitchelllaw.com/es/reclamos-accidentes-auto">
         </div>
       </div>
+      <div class="grid-2" id="breadcrumbSectionFields" style="display:none;">
+        <div class="field">
+          <label for="breadcrumbSectionEn">Breadcrumb section (EN)</label>
+          <input id="breadcrumbSectionEn" placeholder="Practice Areas">
+        </div>
+        <div class="field">
+          <label for="breadcrumbSectionEs">Breadcrumb section (ES)</label>
+          <input id="breadcrumbSectionEs" placeholder="Áreas de Práctica">
+        </div>
+      </div>
     </div>
 
-    <div class="section">
+    <div class="section" data-show="home,practice,faq">
       <p class="section-number">05</p>
       <h2>Frequently Asked Questions</h2>
       <p class="hint">Self-contained answers: include the specific fact or statute. Each language has its own set — write natural questions, not literal translations.</p>
@@ -487,31 +573,6 @@
       </div>
       <div class="faq-list" id="faqList"></div>
       <button class="add-row" id="addFaq">+ Add question</button>
-    </div>
-
-    <div class="section">
-      <p class="section-number">06</p>
-      <h2>Schema Types to Include</h2>
-      <div class="check-grid">
-        <div class="check-row">
-          <input type="checkbox" id="incAttorney" checked>
-          <label for="incAttorney">Attorney
-            <span class="desc">Lead attorney profile (section 02) — outputs as Person schema</span>
-          </label>
-        </div>
-        <div class="check-row">
-          <input type="checkbox" id="incFaq" checked>
-          <label for="incFaq">FAQPage
-            <span class="desc">Uses the questions from section 05</span>
-          </label>
-        </div>
-        <div class="check-row">
-          <input type="checkbox" id="incBreadcrumb" checked>
-          <label for="incBreadcrumb">BreadcrumbList
-            <span class="desc">Home → Page name (section 04)</span>
-          </label>
-        </div>
-      </div>
     </div>
 
     <button class="stamp-btn" id="generateBtn">Stamp document →</button>
@@ -618,6 +679,7 @@
   let activeFaqLang = 'en';
   let activeTab = 'jsonld';
   let activeOutLang = 'en';
+  let pageType = 'home';
   let lastJson = {en:'', es:''};
   let lastLlms = {en:'', es:''};
 
@@ -672,6 +734,88 @@
 
   renderFaqs();
 
+  const ATTORNEY_SECTION_TEXT = {
+    home: { title: 'Lead Attorney', hint: 'Verifiable credentials — key for YMYL trust. Leave the name blank to omit this schema entirely.' },
+    practice: { title: 'Attributed Attorney (optional)', hint: 'If this practice area page names a specific attorney, fill this in. Leave the name blank to omit.' },
+    bio: { title: 'Attorney Bio', hint: 'This is the main content of the page — fill in the full profile.' },
+    blog: { title: 'Author', hint: 'The person credited as author of this article. Can be the same attorney or someone else on staff.' }
+  };
+
+  function applyPageType(type){
+    pageType = type;
+
+    document.querySelectorAll('.section[data-show]').forEach(sec => {
+      const allowed = sec.getAttribute('data-show').split(',');
+      sec.classList.toggle('hidden', !allowed.includes(type));
+    });
+
+    const attText = ATTORNEY_SECTION_TEXT[type];
+    if(attText){
+      document.getElementById('attorneySectionTitle').textContent = attText.title;
+      document.getElementById('attorneySectionHint').textContent = attText.hint;
+    }
+
+    const breadcrumbFields = document.getElementById('breadcrumbSectionFields');
+    const needsSectionLabel = ['practice','bio','blog'].includes(type);
+    breadcrumbFields.style.display = needsSectionLabel ? '' : 'none';
+    if(needsSectionLabel){
+      const d = BREADCRUMB_DEFAULTS[type];
+      document.getElementById('breadcrumbSectionEn').placeholder = d.en;
+      document.getElementById('breadcrumbSectionEs').placeholder = d.es;
+    }
+  }
+
+  document.getElementById('pageTypeSelect').addEventListener('change', (e) => applyPageType(e.target.value));
+
+  applyPageType('home');
+
+  // ---- Firm-level autosave (sections 01–03) — persists across pages and reloads ----
+  const PERSISTED_FIELD_IDS = [
+    'firmName','siteUrl','phone','logoUrl','logoWidth','logoHeight',
+    'street','locality','region','postal','country','areaServed',
+    'attName','attTitleEn','attTitleEs','university','barNumber','recognizedBy',
+    'knowsAboutEn','knowsAboutEs','ratingValue','reviewCount'
+  ];
+  const FIRM_STORAGE_KEY = 'legalSchemaTool_firmData_v1';
+
+  function saveFirmData(){
+    const data = {};
+    PERSISTED_FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) data[id] = el.value;
+    });
+    try { localStorage.setItem(FIRM_STORAGE_KEY, JSON.stringify(data)); } catch(e){ /* storage unavailable, fail silently */ }
+  }
+
+  function loadFirmData(){
+    let raw;
+    try { raw = localStorage.getItem(FIRM_STORAGE_KEY); } catch(e){ return; }
+    if(!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      PERSISTED_FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if(el && data[id]) el.value = data[id];
+      });
+    } catch(e){ /* corrupted data, ignore */ }
+  }
+
+  PERSISTED_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', saveFirmData);
+  });
+
+  document.getElementById('clearSavedBtn').addEventListener('click', () => {
+    if(!confirm('Clear saved firm details from this device? This only clears sections 01–03, not the current page fields.')) return;
+    try { localStorage.removeItem(FIRM_STORAGE_KEY); } catch(e){}
+    PERSISTED_FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+  });
+
+  loadFirmData();
+
   function val(id){ return document.getElementById(id).value.trim(); }
   function checked(id){ return document.getElementById(id).checked; }
 
@@ -701,6 +845,12 @@
     return obj;
   }
 
+  const BREADCRUMB_DEFAULTS = {
+    practice: { en: 'Practice Areas', es: 'Áreas de Práctica' },
+    bio: { en: 'Our Team', es: 'Nuestro Equipo' },
+    blog: { en: 'Blog', es: 'Blog' }
+  };
+
   function buildGraph(lang){
     const cap = lang === 'es' ? 'Es' : 'En';
     const siteUrl = val('siteUrl');
@@ -710,6 +860,7 @@
     const graph = [];
 
     const orgId = (siteUrl || 'https://your-site.com') + '/#organization';
+    const attorneyId = orgId + '-attorney';
 
     const logoUrl = val('logoUrl');
     const logoWidth = val('logoWidth');
@@ -750,26 +901,61 @@
 
     graph.push(legalService);
 
-    if(checked('incAttorney')){
+    // ---- Person (attorney/author) — shown for home, practice, bio, blog; included if name is filled ----
+    const attName = val('attName');
+    const attorneySectionVisible = ['home','practice','bio','blog'].includes(pageType);
+    if(attorneySectionVisible && attName){
       const knowsAbout = val('knowsAbout' + cap).split(',').map(s => s.trim()).filter(Boolean);
       graph.push({
         '@type': 'Person',
-        '@id': orgId + '-attorney',
-        name: val('attName'),
+        '@id': attorneyId,
+        name: attName,
         jobTitle: val('attTitle' + cap),
         worksFor: { '@id': orgId },
         alumniOf: val('university') ? { '@type': 'CollegeOrUniversity', name: val('university') } : undefined,
-        hasCredential: (val('credential') || val('recognizedBy')) ? {
+        hasCredential: (val('barNumber') || val('recognizedBy')) ? {
           '@type': 'EducationalOccupationalCredential',
-          credentialCategory: val('credential'),
+          credentialCategory: 'license',
+          identifier: val('barNumber') || undefined,
           recognizedBy: val('recognizedBy') ? { '@type': 'Organization', name: val('recognizedBy') } : undefined
         } : undefined,
         knowsAbout: knowsAbout
       });
-      legalService.employee = { '@id': orgId + '-attorney' };
+      legalService.employee = { '@id': attorneyId };
     }
 
-    if(checked('incFaq')){
+    // ---- Service — Practice Area pages only ----
+    if(pageType === 'practice'){
+      graph.push({
+        '@type': 'Service',
+        '@id': (pageUrl || siteUrl) + '#service',
+        serviceType: pageName,
+        name: pageName,
+        description: val('serviceDesc' + cap) || undefined,
+        areaServed: val('areaServed') || undefined,
+        provider: { '@id': orgId },
+        url: pageUrl
+      });
+    }
+
+    // ---- Article — Blog Post pages only ----
+    if(pageType === 'blog'){
+      graph.push({
+        '@type': 'Article',
+        '@id': (pageUrl || siteUrl) + '#article',
+        headline: pageName,
+        inLanguage: lang,
+        datePublished: val('datePublished') || undefined,
+        image: val('articleImage') || undefined,
+        author: attName ? { '@id': attorneyId } : undefined,
+        publisher: { '@id': orgId },
+        mainEntityOfPage: pageUrl,
+        url: pageUrl
+      });
+    }
+
+    // ---- FAQPage — home, practice, faq page types only ----
+    if(['home','practice','faq'].includes(pageType)){
       const items = faqsByLang[lang].filter(f => f.q && f.a).map(f => ({
         '@type': 'Question',
         name: f.q,
@@ -785,14 +971,21 @@
       }
     }
 
-    if(checked('incBreadcrumb') && pageName){
-      graph.push({
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: (lang === 'es' ? 'Inicio' : 'Home'), item: siteUrl },
-          { '@type': 'ListItem', position: 2, name: pageName, item: pageUrl }
-        ]
-      });
+    // ---- BreadcrumbList — skipped for Home, 2 levels for FAQ/Contact, 3 levels for Practice/Bio/Blog ----
+    if(pageType !== 'home' && pageName){
+      const homeLabel = lang === 'es' ? 'Inicio' : 'Home';
+      const items = [{ '@type': 'ListItem', position: 1, name: homeLabel, item: siteUrl }];
+      if(['practice','bio','blog'].includes(pageType)){
+        const fallback = BREADCRUMB_DEFAULTS[pageType][lang];
+        const sectionLabel = val('breadcrumbSection' + cap) || fallback;
+        items.push({ '@type': 'ListItem', position: 2, name: sectionLabel, item: undefined });
+        items.push({ '@type': 'ListItem', position: 3, name: pageName, item: pageUrl });
+      } else {
+        items.push({ '@type': 'ListItem', position: 2, name: pageName, item: pageUrl });
+      }
+      // re-number positions after prune-safe construction
+      items.forEach((it, i) => it.position = i + 1);
+      graph.push({ '@type': 'BreadcrumbList', itemListElement: items });
     }
 
     return prune(graph);
@@ -805,6 +998,7 @@
       inWord: ' in ',
       specializing: ', specializing in ',
       ledBy: ' Led by ',
+      barNoLabel: 'Bar No. ',
       keyPages: '## Key Pages',
       pageFallback: '- [Page name](https://your-site.com/page): Brief description of the content.',
       specializedAbout: 'Specialized content about ',
@@ -818,6 +1012,7 @@
       inWord: ' en ',
       specializing: ', especializado en ',
       ledBy: ' Dirigido por ',
+      barNoLabel: 'Matrícula N.° ',
       keyPages: '## Páginas clave',
       pageFallback: '- [Nombre de página](https://tu-sitio.com/pagina): Descripción breve del contenido.',
       specializedAbout: 'Contenido especializado sobre ',
@@ -827,13 +1022,35 @@
     }
   };
 
+  function pageDescriptionFor(lang, cap, pageName){
+    const T = LLMS_TEXT[lang];
+    if(pageType === 'practice'){
+      const serviceDesc = val('serviceDesc' + cap);
+      if(serviceDesc) return serviceDesc;
+    }
+    if(pageType === 'bio'){
+      const attTitle = val('attTitle' + cap);
+      const areas = val('knowsAbout' + cap);
+      if(lang === 'es') return `Perfil profesional${attTitle ? ' de ' + attTitle.toLowerCase() : ''}${areas ? ', especializado en ' + areas : ''}.`;
+      return `Attorney profile${attTitle ? ' — ' + attTitle : ''}${areas ? ', focused on ' + areas : ''}.`;
+    }
+    if(pageType === 'blog'){
+      const date = val('datePublished');
+      if(lang === 'es') return `Artículo del blog${date ? ' publicado el ' + date : ''} sobre ${pageName}.`;
+      return `Blog article${date ? ' published ' + date : ''} covering ${pageName}.`;
+    }
+    const firstFaq = faqsByLang[lang].find(f => f.q && f.a);
+    return firstFaq ? firstFaq.a : T.specializedAbout + pageName + '.';
+  }
+
   function buildLlmsTxt(lang){
     const cap = lang === 'es' ? 'Es' : 'En';
     const T = LLMS_TEXT[lang];
     const firmName = val('firmName') || T.firmFallback;
     const attName = val('attName');
     const attTitle = val('attTitle' + cap);
-    const credential = val('credential');
+    const barNumber = val('barNumber');
+    const recognizedBy = val('recognizedBy');
     const university = val('university');
     const locality = val('locality');
     const areas = val('knowsAbout' + cap);
@@ -847,7 +1064,10 @@
     if(areas) desc += `${T.specializing}${areas}`;
     desc += '.';
     if(attName) desc += `${T.ledBy}${attName}${attTitle ? ', ' + attTitle : ''}`;
-    if(credential) desc += ` (${credential})`;
+    if(recognizedBy || barNumber){
+      const credBits = [recognizedBy, barNumber ? T.barNoLabel + barNumber : ''].filter(Boolean);
+      desc += ` (${credBits.join(', ')})`;
+    }
     if(university) desc += `, ${university}`;
     desc += '.';
     lines.push(desc);
@@ -855,8 +1075,7 @@
     lines.push(T.keyPages);
     lines.push('');
     if(pageName && pageUrl){
-      const firstFaq = faqsByLang[lang].find(f => f.q && f.a);
-      lines.push(`- [${pageName}](${pageUrl}): ${firstFaq ? firstFaq.a : T.specializedAbout + pageName + '.'}`);
+      lines.push(`- [${pageName}](${pageUrl}): ${pageDescriptionFor(lang, cap, pageName)}`);
     } else {
       lines.push(T.pageFallback);
     }
