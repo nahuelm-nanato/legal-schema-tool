@@ -346,9 +346,19 @@
           <input id="phone" placeholder="+1 (212) 555-0148">
         </div>
       </div>
-      <div class="field">
-        <label for="logoUrl">Logo URL</label>
-        <input id="logoUrl" placeholder="https://www.mitchelllaw.com/logo.png">
+      <div class="grid-3">
+        <div class="field">
+          <label for="logoUrl">Logo URL</label>
+          <input id="logoUrl" placeholder="https://www.mitchelllaw.com/logo.png">
+        </div>
+        <div class="field">
+          <label for="logoWidth">Logo width (px, optional)</label>
+          <input id="logoWidth" placeholder="600">
+        </div>
+        <div class="field">
+          <label for="logoHeight">Logo height (px, optional)</label>
+          <input id="logoHeight" placeholder="60">
+        </div>
       </div>
       <div class="grid-2">
         <div class="field">
@@ -373,6 +383,10 @@
           <label for="country">Country (2-letter ISO)</label>
           <input id="country" placeholder="US">
         </div>
+      </div>
+      <div class="field">
+        <label for="areaServed">Area served (optional)</label>
+        <input id="areaServed" placeholder="Chicago, IL">
       </div>
     </div>
 
@@ -482,7 +496,7 @@
         <div class="check-row">
           <input type="checkbox" id="incAttorney" checked>
           <label for="incAttorney">Attorney
-            <span class="desc">Lead attorney profile (section 02)</span>
+            <span class="desc">Lead attorney profile (section 02) — outputs as Person schema</span>
           </label>
         </div>
         <div class="check-row">
@@ -661,6 +675,13 @@
   function val(id){ return document.getElementById(id).value.trim(); }
   function checked(id){ return document.getElementById(id).checked; }
 
+  function normalizePhone(raw){
+    if(!raw) return '';
+    const hasPlus = raw.trim().startsWith('+');
+    const digits = raw.replace(/[^\d]/g, '');
+    return (hasPlus ? '+' : '') + digits;
+  }
+
   function prune(obj){
     if(Array.isArray(obj)){
       return obj.map(prune).filter(v => v !== undefined && v !== null && v !== '');
@@ -690,13 +711,23 @@
 
     const orgId = (siteUrl || 'https://your-site.com') + '/#organization';
 
+    const logoUrl = val('logoUrl');
+    const logoWidth = val('logoWidth');
+    const logoHeight = val('logoHeight');
+
     const legalService = {
       '@type': 'LegalService',
       '@id': orgId,
       name: firmName,
       url: siteUrl,
-      logo: val('logoUrl'),
-      telephone: val('phone'),
+      logo: logoUrl ? {
+        '@type': 'ImageObject',
+        url: logoUrl,
+        width: logoWidth || undefined,
+        height: logoHeight || undefined
+      } : undefined,
+      telephone: normalizePhone(val('phone')),
+      areaServed: val('areaServed') || undefined,
       address: {
         '@type': 'PostalAddress',
         streetAddress: val('street'),
@@ -722,7 +753,7 @@
     if(checked('incAttorney')){
       const knowsAbout = val('knowsAbout' + cap).split(',').map(s => s.trim()).filter(Boolean);
       graph.push({
-        '@type': 'Attorney',
+        '@type': 'Person',
         '@id': orgId + '-attorney',
         name: val('attName'),
         jobTitle: val('attTitle' + cap),
